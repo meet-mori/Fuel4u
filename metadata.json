@@ -1,0 +1,7 @@
+{
+  "name": "FuelFast On-Demand",
+  "description": "An application for users in India to request on-demand petrol or diesel delivery to their current location. The app uses geolocation to pinpoint the user and provides a confirmation with an estimated delivery time.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
