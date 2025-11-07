@@ -1,24 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { User, UserRole } from '../types';
-import { fetchAllUsers, updateUserRoles } from '../services/apiService';
 import { UserManagementTable } from '../components/admin/UserManagementTable';
 import { EditUserModal } from '../components/admin/EditUserModal';
 import { SpinnerIcon } from '../components/icons';
 
+// Mock data now lives inside the component
+const MOCK_USERS: User[] = [
+    { id: 'user-1', email: 'rider@example.com', roles: ['RIDER'] },
+    { id: 'user-2', email: 'admin@example.com', roles: ['ADMIN'] },
+    { id: 'user-3', email: 'superadmin@example.com', roles: ['SUPER_ADMIN'] },
+    { id: 'user-4', email: 'multi@example.com', roles: ['RIDER', 'ADMIN'] },
+];
+
 export const SuperAdminPage: React.FC = () => {
-    const [users, setUsers] = useState<User[]>([]);
+    const [users, setUsers] = useState<User[]>(MOCK_USERS);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    const loadUsers = async () => {
-        setIsLoading(true);
-        const fetchedUsers = await fetchAllUsers();
-        setUsers(fetchedUsers);
-        setIsLoading(false);
-    };
-
     useEffect(() => {
-        loadUsers();
+        // No data fetching needed, just stop loading
+        setIsLoading(false);
     }, []);
 
     const handleEditUser = (user: User) => {
@@ -29,9 +30,11 @@ export const SuperAdminPage: React.FC = () => {
         setSelectedUser(null);
     };
 
-    const handleSaveRoles = async (userId: string, roles: UserRole[]) => {
-        await updateUserRoles(userId, roles);
-        await loadUsers(); // Refresh user list
+    const handleSaveRoles = (userId: string, roles: UserRole[]) => {
+        // Update local state directly instead of an API call
+        setUsers(prevUsers => 
+            prevUsers.map(u => u.id === userId ? { ...u, roles } : u)
+        );
         handleCloseModal();
     };
 

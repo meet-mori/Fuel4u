@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { FuelType, FuelRequest } from '../../types';
-import { createFuelRequest } from '../../services/apiService';
 import { useGeolocation } from '../../hooks/useGeolocation';
 import { useAppContext } from '../../contexts/AppContext';
 import { FuelTypeSelector } from '../common/FuelTypeSelector';
@@ -24,12 +23,23 @@ export const RequestForm: React.FC<RequestFormProps> = ({ onSubmit }) => {
         if (!fuelType || !location || !user) return;
 
         setIsSubmitting(true);
+        // Simulate a network delay without an actual API call
+        await new Promise(resolve => setTimeout(resolve, 500));
         try {
-            const newRequest = await createFuelRequest(fuelType, quantity, location, user);
+            // Create the new request object locally
+            const newRequest: FuelRequest = {
+                id: `req-${Date.now()}`,
+                userId: user.id,
+                fuelType,
+                quantity,
+                location,
+                status: 'Pending',
+                createdAt: new Date(),
+                user: { email: user.email },
+            };
             onSubmit(newRequest);
         } catch (error) {
             console.error("Failed to create request:", error);
-            // In a real app, show an error message to the user
         } finally {
             setIsSubmitting(false);
         }

@@ -1,6 +1,13 @@
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { User, UserRole } from '../types';
-import * as api from '../services/apiService';
+
+// Mock user data that would have been in the API service
+const MOCK_USERS: User[] = [
+    { id: 'user-1', email: 'rider@example.com', roles: ['RIDER'] },
+    { id: 'user-2', email: 'admin@example.com', roles: ['ADMIN'] },
+    { id: 'user-3', email: 'superadmin@example.com', roles: ['SUPER_ADMIN'] },
+    { id: 'user-4', email: 'multi@example.com', roles: ['RIDER', 'ADMIN'] },
+];
 
 interface AppContextType {
     user: User | null;
@@ -16,37 +23,30 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isLoading, setIsLoading] = useState<boolean>(false); // No initial loading needed
     const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
 
-    useEffect(() => {
-        const checkUser = async () => {
-            try {
-                const currentUser = await api.fetchCurrentUser();
-                setUser(currentUser);
-            } catch (error) {
-                console.error("Failed to fetch user", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        checkUser();
-    }, []);
-
-    const login = async (email: string, password: string) => {
-        const loggedInUser = await api.login(email, password);
-        setUser(loggedInUser);
-        setSelectedRole(null); // Reset role on new login
+    const login = async (email: string, password_unused: string) => {
+        const foundUser = MOCK_USERS.find(u => u.email === email);
+        if (foundUser) {
+            setUser(foundUser);
+            setSelectedRole(null);
+        } else {
+            throw new Error('Invalid credentials');
+        }
     };
 
-    const signup = async (email: string, password: string, role: UserRole) => {
-        const signedUpUser = await api.signup(email, password, role);
-        setUser(signedUpUser);
+    const signup = async (email: string, password_unused: string, role: UserRole) => {
+        if (MOCK_USERS.some(u => u.email === email)) {
+            throw new Error('User already exists');
+        }
+        const newUser: User = { id: `user-${Date.now()}`, email, roles: [role] };
+        MOCK_USERS.push(newUser); // Add to our mock in-memory DB
+        setUser(newUser);
         setSelectedRole(null);
     };
 
-    const logout = async () => {
-        await api.logout();
+    const logout = () => { // No longer needs to be async
         setUser(null);
         setSelectedRole(null);
     };

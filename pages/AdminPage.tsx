@@ -1,35 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { FuelRequest, RequestStatus } from '../types';
-import { fetchFuelRequests, updateRequestStatus } from '../services/apiService';
 import { RequestList } from '../components/admin/RequestList';
 import { Map } from '../components/common/Map';
 import { SpinnerIcon } from '../components/icons';
 
+// Mock data is now managed locally within the component
+const MOCK_REQUESTS: FuelRequest[] = [
+    { id: 'req-1', userId: 'user-1', fuelType: 'Petrol', quantity: 10, location: { latitude: 12.9716, longitude: 77.5946 }, status: 'Pending', createdAt: new Date(Date.now() - 5 * 60000) },
+    { id: 'req-2', userId: 'user-4', fuelType: 'Diesel', quantity: 25, location: { latitude: 12.9716, longitude: 77.5946 }, status: 'En Route', createdAt: new Date(Date.now() - 15 * 60000) },
+];
+
 export const AdminPage: React.FC = () => {
-    const [requests, setRequests] = useState<FuelRequest[]>([]);
+    const [requests, setRequests] = useState<FuelRequest[]>(MOCK_REQUESTS);
     const [selectedRequest, setSelectedRequest] = useState<FuelRequest | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     useEffect(() => {
-        const loadRequests = async () => {
-            setIsLoading(true);
-            const fetchedRequests = await fetchFuelRequests();
-            setRequests(fetchedRequests);
-            if (fetchedRequests.length > 0) {
-              setSelectedRequest(fetchedRequests[0]);
-            }
-            setIsLoading(false);
-        };
-        loadRequests();
+        // No API call needed, just initialize the view
+        setIsLoading(true);
+        if (requests.length > 0) {
+          setSelectedRequest(requests[0]);
+        }
+        setIsLoading(false);
     }, []);
 
     const handleSelectRequest = (request: FuelRequest) => {
         setSelectedRequest(request);
     };
 
-    const handleStatusChange = async (status: RequestStatus) => {
+    const handleStatusChange = (status: RequestStatus) => {
         if (!selectedRequest) return;
-        const updatedRequest = await updateRequestStatus(selectedRequest.id, status);
+        // Update local state directly instead of an API call
+        const updatedRequest = { ...selectedRequest, status };
         setRequests(prev => prev.map(r => r.id === updatedRequest.id ? updatedRequest : r));
         setSelectedRequest(updatedRequest);
     };
